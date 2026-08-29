@@ -226,11 +226,13 @@
     <b style="font-size:13px; letter-spacing:.06em; text-transform:uppercase;">Get started</b>
     <div style="font-size:13.5px; margin-top:6px; line-height:1.55">
       1. Pick your <b>format</b> below (5v5 / 7v7 / 9v9 / 11v11).<br>
-      2. Open <b>Roster &amp; availability</b> and add your players.<br>
+      2. Add your players — import the roster sheet the region emailed you, or type them in under <b>Roster &amp; availability</b>.<br>
       3. Enter the game info, hit <b>Auto-fill whole game</b>, then drag names to fix positions.<br>
       <span style="color:var(--muted)">Everything saves in this browser on this device only — nothing is uploaded anywhere.</span>
     </div>
+    <button id="importbtn" style="margin-top:10px; margin-right:6px; padding:8px 12px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; font-size:13px;">Import roster sheet (.xlsx)</button>
     <button id="samplebtn" style="margin-top:10px; padding:8px 12px; border-radius:8px; border:1px solid var(--line); background:#faf8f2; cursor:pointer; font-size:13px;">Or load a sample team to poke around</button>
+    <input type="file" id="rosterfile" accept=".xlsx,.xls,.csv" style="display:none">
   </div>
 
   <div class="card">
@@ -263,6 +265,9 @@
       <button id="addbtn">Add</button>
     </div>
     <div id="missing"></div>
+    <div class="addrow" style="margin-top:8px">
+      <button id="importbtn2" style="flex:1; background:#faf8f2; color:var(--ink); border-color:var(--line)">Import roster sheet (.xlsx)</button>
+    </div>
     <div class="addrow" style="margin-top:12px">
       <input id="handoff" placeholder="Paste a hand-off code from the other coach">
       <button id="handoffbtn">Load</button>
@@ -761,6 +766,74 @@ function loadSample(){ // demo roster: obviously fake names, sized to the curren
   save(); render();
   toast("Sample team loaded. Drag names around, try the prints, log the game. Roster → remove players to start real.");
 }
+/* ---------- roster import (.xlsx, parsed IN THIS BROWSER — never uploaded) ----------
+   Built for the AYSO region roster export: a "Team Volunteer Information"
+   block (Role / First Name / Last Name) and a "Team Participants Information"
+   block (Participant First Name / Participant Last Name). Imports ONLY player
+   names + coach names; contact info and birthdates are deliberately ignored. */
+let XLSXlib=null;
+function loadXLSX(){
+  return XLSXlib?Promise.resolve(XLSXlib):new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=()=>{ XLSXlib=window.XLSX; res(XLSXlib); };
+    s.onerror=()=>rej(new Error("xlsx lib load failed"));
+    document.head.appendChild(s);
+  });
+}
+function extractRoster(wb,XLSX){
+  const out={players:[],coach:"",assCoach:""};
+  const g=(row,i)=>String((row&&row[i]!=null)?row[i]:"").trim();
+  wb.SheetNames.forEach(sn=>{
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:""});
+    for(let r=0;r<rows.length;r++){
+      const cells=(rows[r]||[]).map(v=>String(v==null?"":v).trim().toLowerCase());
+      const role=cells.indexOf("role"), vfi=cells.indexOf("first name"), vli=cells.indexOf("last name");
+      if(role>=0&&vfi>=0&&vli>=0){ // volunteer block → coach fields
+        for(let k=r+1;k<rows.length;k++){
+          const ro=g(rows[k],role).toLowerCase(); if(!ro) break;
+          const nm=g(rows[k],vli)+", "+g(rows[k],vfi);
+          if(ro.includes("head")&&!out.coach) out.coach=nm;
+          else if(ro.includes("assist")&&!out.assCoach) out.assCoach=nm;
+        }
+      }
+      const fi=cells.findIndex(c=>/(participant|player).*first.*name/.test(c));
+      const li=cells.findIndex(c=>/(participant|player).*last.*name/.test(c));
+      const single=(fi<0||li<0)?cells.findIndex(c=>c==="player name"||c==="player"||c==="participant"):-1;
+      if((fi>=0&&li>=0)||single>=0){
+        for(let k=r+1;k<rows.length;k++){
+          const nm=single>=0?g(rows[k],single):(g(rows[k],fi)+" "+g(rows[k],li)).trim();
+          if(!nm.replace(/\s+/g,"")) break; // blank row ends the block
+          out.players.push(nm);
+        }
+      }
+    }
+  });
+  out.players=[...new Set(out.players)];
+  return out;
+}
+function importRosterFile(file){
+  loadXLSX().then(XLSX=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      try{
+        const found=extractRoster(XLSX.read(fr.result,{type:"array"}),XLSX);
+        if(!found.players.length){ toast("Couldn't find a player-name column in that sheet."); return; }
+        const existing=new Set(S.players.map(p=>p.name.toLowerCase()));
+        const fresh=found.players.filter(n=>!existing.has(n.toLowerCase()));
+        if(!fresh.length){ toast("All "+found.players.length+" players in that sheet are already on the roster."); return; }
+        if(!confirm("Add "+fresh.length+" players from the sheet?\n\n"+fresh.join(", ")+
+          "\n\nOnly names are imported — contact info and birthdates are ignored, and nothing leaves this device.")) return;
+        fresh.forEach(n=>S.players.push({id:"p"+(S.nextId++),name:n,num:"",out:false,reason:""}));
+        if(found.coach&&!S.coach) S.coach=found.coach;
+        if(found.assCoach&&!S.assCoach) S.assCoach=found.assCoach;
+        save(); render(); $("#rosterbox").open=true;
+        toast(fresh.length+" players imported. All of it stayed on this device.");
+      }catch(e){ toast("That file didn't parse as a roster sheet."); }
+    };
+    fr.readAsArrayBuffer(file);
+  },()=>toast("Importing needs internet the first time (to load the spreadsheet reader). Try again online."));
+}
 
 /* ---------- print: replica of the 3-3-2 card ---------- */
 function buildPrintCard(){
@@ -1055,6 +1128,10 @@ function boot(){
     $("#banner").scrollIntoView({behavior:"smooth",block:"center"}); };
   $("#handoffbtn").onclick=()=>{ const v=$("#handoff").value; if(v.trim()) importCode(v); $("#handoff").value=""; };
   $("#samplebtn").onclick=loadSample;
+  const rfile=$("#rosterfile");
+  $("#importbtn").onclick=()=>rfile.click();
+  $("#importbtn2").onclick=()=>rfile.click();
+  rfile.onchange=()=>{ if(rfile.files[0]) importRosterFile(rfile.files[0]); rfile.value=""; };
   maybeLoadFromHash();
   render();
   buildGameCard(); // pre-warm: gets the form image decoded long before any print
