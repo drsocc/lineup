@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lineup — AYSO R785</title>
+<title>BenchMark — AYSO R785 Lineups</title>
 <style>
   :root{
     --ink:#171b17; --paper:#f1efe8; --card:#fff; --line:#d7d3c6; --muted:#6d7268;
@@ -217,7 +217,7 @@
 <body data-print="lineup">
 
 <header>
-  <h1 id="h1title">Lineup · AYSO R785</h1>
+  <h1 id="h1title">BenchMark</h1>
   <button id="sharebtn">Hand-off code</button>
   <button id="newgame">New game</button>
   <button id="wipebtn" title="Erase everything saved on this device">Start over</button>
@@ -470,7 +470,7 @@ function syncInputs(){
   $("#f-team").value=S.teamName||""; $("#f-colors").value=S.teamColors||"";
   $("#f-coach").value=S.coach||""; $("#f-ass").value=S.assCoach||"";
   $("#formation").value=S.formation; $("#format").value=S.format;
-  $("#h1title").textContent=S.teamName||"Lineup · AYSO R785";
+  $("#h1title").textContent="BenchMark"+(S.teamName?" · "+S.teamName:"");
 }
 function renderQuarters(){
   const wrap=$("#quarters"); wrap.innerHTML="";
