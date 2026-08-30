@@ -874,6 +874,7 @@ function buildPrintCard(){
     '<div class="cell">Date: <b>'+esc(dateStr)+'</b></div>'+
     '<div class="cell">Time: <b>'+esc(timeStr)+'</b></div>'+
     '<div class="cell">Game #: <b>'+esc(S.gameNo||"")+'</b></div>'+
+    '<div class="cell">Field: <b>'+esc(S.field||"")+'</b></div>'+
     '<div class="cell grow">Opponent: <b>'+esc(S.opponent||"")+'</b></div>'+
     '<div class="cell">Half Score:</div>'+
     '<div class="cell">Final Score:</div>'+
@@ -991,9 +992,9 @@ function makeLineupPdf(){
   // header cells: [width, label, value, style]
   const dateStr=S.date?new Date(S.date+"T12:00:00").toLocaleDateString():"";
   const cells=[[20,null,"5v5","nine"],[22,null,null,"hv"],[30,"Date:",dateStr,""],[22,"Time:",S.time||"",""],
-    [18,"Game #:",S.gameNo||"",""],[0,"Opponent:",S.opponent||"",""],[24,"Half Score:","",""],
-    [24,"Final Score:","",""],[18,null,S.formation.replace(/[^0-9]/g,""),"fnum"]];
-  const fixed=cells.reduce((a,c)=>a+c[0],0); cells[5][0]=W-fixed;
+    [18,"Game #:",S.gameNo||"",""],[36,"Field:",S.field||"",""],[0,"Opponent:",S.opponent||"",""],
+    [24,"Half Score:","",""],[24,"Final Score:","",""],[18,null,S.formation.replace(/[^0-9]/g,""),"fnum"]];
+  const fixed=cells.reduce((a,c)=>a+c[0],0); cells[6][0]=W-fixed;
   let cx=X;
   cells.forEach((c,i)=>{
     const [wd,lab,val,st]=c;
