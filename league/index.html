@@ -220,6 +220,7 @@
   <h1 id="h1title">Lineup · AYSO R785</h1>
   <button id="sharebtn">Hand-off code</button>
   <button id="newgame">New game</button>
+  <button id="wipebtn" title="Erase everything saved on this device">Start over</button>
 </header>
 
 <main>
@@ -1283,6 +1284,11 @@ function boot(){
     $("#banner").scrollIntoView({behavior:"smooth",block:"center"}); };
   $("#handoffbtn").onclick=()=>{ const v=$("#handoff").value; if(v.trim()) importCode(v); $("#handoff").value=""; };
   $("#samplebtn").onclick=loadSample;
+  $("#wipebtn").onclick=()=>{
+    if(!confirm("Erase everything saved on this device — roster, schedule, lineups, and the season history? This can't be undone.\n\nTip: tap Hand-off code first if you want a backup you can paste back in later.")) return;
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    location.reload();
+  };
   const rfile=$("#rosterfile");
   $("#importbtn").onclick=()=>rfile.click();
   $("#importbtn2").onclick=()=>rfile.click();
