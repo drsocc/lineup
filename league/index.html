@@ -44,6 +44,7 @@
   .prow button{border:1px solid var(--line); background:#faf8f2; border-radius:8px; padding:6px 10px; font-size:12.5px; cursor:pointer;}
   .prow button.outbtn.active{background:var(--red); border-color:var(--red); color:#fff;}
   .prow button.inbtn.active{background:var(--green); border-color:var(--green); color:#fff;}
+  .prow button.delbtn{color:var(--muted); padding:6px 9px;}
   .addrow{display:flex; gap:8px; margin-top:10px;}
   .addrow input{flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:14px;}
   .addrow button{padding:8px 12px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer;}
@@ -614,7 +615,15 @@ function renderRoster(){
     const outBtn=document.createElement("button");
     outBtn.className="outbtn"+(p.out?" active":""); outBtn.textContent="Out";
     outBtn.onclick=()=>setOut(p,true);
-    row.append(num,nm,inBtn,outBtn); list.appendChild(row);
+    const delBtn=document.createElement("button");
+    delBtn.className="delbtn"; delBtn.textContent="✕"; delBtn.title="Remove from roster (added in error / left the team)";
+    delBtn.onclick=()=>{
+      if(!confirm("Remove "+p.name+" from the roster permanently?\n\nThis takes them out of all quarters and off the printed cards. Games already logged in the season history keep their name.")) return;
+      S.players=S.players.filter(x=>x.id!==p.id);
+      for(let q=0;q<4;q++) removeFromQuarter(p.id,q);
+      save(); render(); toast(firstName(p.name)+" removed from the roster.");
+    };
+    row.append(num,nm,inBtn,outBtn,delBtn); list.appendChild(row);
   });
   // anyone from the season roster who's been removed can be re-added with a tap
   const miss=DEFAULT_ROSTER.filter(n=>!S.players.some(p=>p.name===n));
