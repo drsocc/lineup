@@ -231,7 +231,9 @@
       2. Add your players — import the roster sheet the region emailed you, or type them in under <b>Roster &amp; availability</b>.<br>
       3. <b>Import schedule</b>: MatchTrak teams just pick their team from the built-in list; region-site teams paste their team calendar link.<br>
       4. Pick the game from the dropdown, hit <b>Auto-fill whole game</b>, then drag names to fix positions.<br>
-      <span style="color:var(--muted)">Everything saves in this browser on this device only — nothing is uploaded anywhere.</span>
+      <span style="color:var(--muted)">Everything saves in this browser on this device only — nothing is uploaded anywhere.
+      That also means clearing your browser's history/site data erases it, so tap <b>Hand-off code</b>
+      now and then and keep the copied code in a note as your backup.</span>
     </div>
     <button id="importbtn" style="margin-top:10px; margin-right:6px; padding:8px 12px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; font-size:13px;">Import roster sheet (.xlsx)</button>
     <button id="samplebtn" style="margin-top:10px; padding:8px 12px; border-radius:8px; border:1px solid var(--line); background:#faf8f2; cursor:pointer; font-size:13px;">Or load a sample team to poke around</button>
@@ -1239,7 +1241,7 @@ function boot(){
     });
   }
   fillFormations(); fillFormationsRef=fillFormations;
-  $("#setupcard").open=!S.players.length; // open on first run; collapses (never vanishes) once a roster exists
+  $("#setupcard").open=true; // instructions start unfurled every load; collapsible for the session
   fmt.onchange=()=>{
     if(fmt.value===S.format) return;
     if(!confirm("Switch to "+fmt.value+"? This clears all four quarters.")){ fmt.value=S.format; return; }
