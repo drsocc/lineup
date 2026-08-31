@@ -93,6 +93,7 @@
   .pbox .cnt.full{background:var(--red);}
   .benchline{margin-top:8px; padding-top:6px; border-top:1px dashed var(--line); font-size:12.5px; color:var(--muted); min-height:20px;}
   .benchline b{color:var(--ink); font-size:10px; letter-spacing:.08em;}
+  .benchline .bname{cursor:pointer; text-decoration:underline dotted; text-underline-offset:2px;}
 
   /* tally + banner */
   .tally{display:flex; flex-wrap:wrap; gap:0 18px;}
@@ -537,7 +538,18 @@ function renderQuarters(){
     const onField=new Set(Object.values(S.quarters[q]));
     const bench=availablePlayers().filter(p=>!onField.has(p.id));
     const bl=document.createElement("div"); bl.className="benchline";
-    bl.innerHTML='<b>BENCH</b> '+(bench.length?bench.map(p=>esc(firstName(p.name))).join(", "):"—");
+    bl.innerHTML='<b>BENCH</b> ';
+    if(!bench.length) bl.insertAdjacentText("beforeend","—");
+    bench.forEach((p,bi)=>{ // tap a benched name → their position, quarter by quarter
+      const sp=document.createElement("span"); sp.className="bname";
+      sp.textContent=(bi?", ":"")+firstName(p.name);
+      sp.onclick=()=>{
+        const labels=flatPositions(S.formation);
+        toast(firstName(p.name)+" — "+QLAB.map((ql,i)=>{ const s=slotOf(p.id,i);
+          return ql.replace(" qtr","")+": "+(s>=0?labels[s].toLowerCase():"sits"); }).join(" · "));
+      };
+      bl.appendChild(sp);
+    });
     panel.appendChild(bl);
     wrap.appendChild(panel);
   }
