@@ -94,6 +94,7 @@
   .benchline{margin-top:8px; padding-top:6px; border-top:1px dashed var(--line); font-size:12.5px; color:var(--muted); min-height:20px;}
   .benchline b{color:var(--ink); font-size:10px; letter-spacing:.08em;}
   .benchline .bname{cursor:pointer; text-decoration:underline dotted; text-underline-offset:2px;}
+  .benchline .bname.placing{color:var(--accent); font-weight:700;}
 
   /* tally + banner */
   .tally{display:flex; flex-wrap:wrap; gap:0 18px;}
@@ -501,7 +502,11 @@ function syncInputs(){
   $("#f-coach").value=S.coach||""; $("#f-ass").value=S.assCoach||"";
   $("#formation").value=S.formation;
 }
+let placing=null; // tap-a-bench-name-then-tap-a-box placement
 function renderQuarters(){
+  // drop a stale placement (player got assigned, removed, or marked out)
+  if(placing){ const pp=byId(placing.pid);
+    if(!pp||pp.out||slotOf(placing.pid,placing.q)>=0) placing=null; }
   const wrap=$("#quarters"); wrap.innerHTML="";
   for(let q=0;q<4;q++){
     const panel=document.createElement("div"); panel.className="qpanel";
@@ -521,7 +526,7 @@ function renderQuarters(){
         const isGK=label==="GOAL KEEPER";
         cell.innerHTML='<div class="plabel">'+label+'</div>';
         const box=document.createElement("div");
-        box.className="pbox"+(isGK?" gk":"")+(p?"":" emptyb");
+        box.className="pbox"+(isGK?" gk":"")+(p?"":" emptyb")+(placing&&placing.q===q?" droptarget":"");
         box.dataset.q=q; box.dataset.slot=idx;
         if(p){
           const qn=quartersPlayed(p.id);
@@ -529,7 +534,13 @@ function renderQuarters(){
             '<span class="cnt'+(qn>=4?' full':'')+'">'+qn+'</span>';
           attachDrag(box.querySelector(".pn"));
         } else box.textContent="tap to assign";
-        box.addEventListener("click",e=>{ if(dragMoved) return; openPicker(q,idx,label); });
+        box.addEventListener("click",e=>{ if(dragMoved) return;
+          if(placing){ // finish a tap-to-place from the bench
+            if(placing.q===q){ const pid=placing.pid; placing=null;
+              removeFromQuarter(pid,q); S.quarters[q][idx]=pid; save(); render(); }
+            else toast("They're queued for the "+QLAB[placing.q]+" — tap a box there, or their name to cancel.");
+            return; }
+          openPicker(q,idx,label); });
         cell.appendChild(box);
         line.appendChild(cell);
       });
@@ -540,13 +551,15 @@ function renderQuarters(){
     const bl=document.createElement("div"); bl.className="benchline";
     bl.innerHTML='<b>BENCH</b> ';
     if(!bench.length) bl.insertAdjacentText("beforeend","—");
-    bench.forEach((p,bi)=>{ // tap a benched name → their position, quarter by quarter
-      const sp=document.createElement("span"); sp.className="bname";
+    bench.forEach((p,bi)=>{ // tap a benched name, then tap the position box to place them
+      const sp=document.createElement("span");
+      sp.className="bname"+(placing&&placing.pid===p.id&&placing.q===q?" placing":"");
       sp.textContent=(bi?", ":"")+firstName(p.name);
       sp.onclick=()=>{
-        const labels=flatPositions(S.formation);
-        toast(firstName(p.name)+" — "+QLAB.map((ql,i)=>{ const s=slotOf(p.id,i);
-          return ql.replace(" qtr","")+": "+(s>=0?labels[s].toLowerCase():"sits"); }).join(" · "));
+        if(placing&&placing.pid===p.id&&placing.q===q){ placing=null; render(); return; }
+        placing={pid:p.id,q};
+        render();
+        toast("Now tap a position in the "+QLAB[q]+" for "+firstName(p.name)+" — or tap their name again to cancel.");
       };
       bl.appendChild(sp);
     });
