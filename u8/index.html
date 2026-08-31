@@ -97,7 +97,8 @@
   /* tally + banner */
   .tally{display:flex; flex-wrap:wrap; gap:0 18px;}
   .tally .t{width:calc(50% - 9px); display:flex; align-items:baseline; font-size:13.5px;
-    padding:4px 0; border-bottom:1px dotted #d8d4c6;}
+    padding:4px 0; border-bottom:1px dotted #d8d4c6; cursor:pointer;}
+  .tally .tdet{width:100%; font-size:12px; color:var(--muted); padding:3px 0 6px; border-bottom:1px dotted #d8d4c6;}
   @media(max-width:560px){ .tally .t{width:100%;} }
   .tally .t .nm{flex:1;}
   .tally .t.outp .nm{color:var(--muted); text-decoration:line-through;}
@@ -290,6 +291,7 @@
 
   <div class="card" style="margin-top:12px">
     <b style="font-size:13px; letter-spacing:.06em; text-transform:uppercase;">Playing time</b>
+    <span style="font-size:12px; color:var(--muted)"> — tap a player to see their positions this game</span>
     <div class="tally" id="tally" style="margin-top:6px"></div>
   </div>
 
@@ -546,10 +548,22 @@ function renderTally(){
     let q=0,dots="";
     for(let i=0;i<4;i++){ const on=slotOf(p.id,i)>=0; if(on)q++; dots+=on?"■":"·"; }
     const pct=p.out?"—":(q*25)+"%";
-    el.insertAdjacentHTML("beforeend",
-      '<div class="t'+(p.out?' outp':'')+'"><span class="nm">'+esc(shortName(p.name))+
+    const row=document.createElement("div");
+    row.className="t"+(p.out?" outp":"");
+    row.innerHTML='<span class="nm">'+esc(shortName(p.name))+
       (p.out?' <span class="why" style="font-size:11px;color:var(--red)">OUT'+(p.reason?" · "+esc(p.reason):"")+'</span>':'')+
-      '</span><span class="qs">'+dots+'</span><span class="tot'+(q>=4?' full':(!p.out&&q<2?' low':''))+'">'+pct+'</span></div>');
+      '</span><span class="qs">'+dots+'</span><span class="tot'+(q>=4?' full':(!p.out&&q<2?' low':''))+'">'+pct+'</span>';
+    row.onclick=()=>{ // tap = this game's position, quarter by quarter
+      const open=row.nextElementSibling&&row.nextElementSibling.classList.contains("tdet");
+      el.querySelectorAll(".tdet").forEach(d=>d.remove());
+      if(open) return;
+      const labels=flatPositions(S.formation);
+      const d=document.createElement("div"); d.className="tdet";
+      d.textContent=QLAB.map((ql,i)=>{ const s=slotOf(p.id,i);
+        return ql.replace(" qtr","")+": "+(s>=0?labels[s].toLowerCase():(p.out?"out":"sits")); }).join("  ·  ");
+      row.after(d);
+    };
+    el.appendChild(row);
   });
 }
 function renderBanner(){

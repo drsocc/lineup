@@ -73,6 +73,7 @@
   .prowline{display:flex; justify-content:center; gap:4%; margin:7px 0;}
   .pcell{width:29%; min-width:86px;}
   .pcell.w4{width:23.5%; min-width:64px;}
+  .pcell.w5{width:18.5%; min-width:54px;}
   .pcell.w2{width:38%;}
   .plabel{font-size:8.5px; text-transform:uppercase; letter-spacing:.06em; color:#555;
     text-align:center; margin-bottom:2px; white-space:nowrap;}
@@ -91,7 +92,8 @@
   /* tally + banner */
   .tally{display:flex; flex-wrap:wrap; gap:0 18px;}
   .tally .t{width:calc(50% - 9px); display:flex; align-items:baseline; font-size:13.5px;
-    padding:4px 0; border-bottom:1px dotted #d8d4c6;}
+    padding:4px 0; border-bottom:1px dotted #d8d4c6; cursor:pointer;}
+  .tally .tdet{width:100%; font-size:12px; color:var(--muted); padding:3px 0 6px; border-bottom:1px dotted #d8d4c6;}
   @media(max-width:560px){ .tally .t{width:100%;} }
   .tally .t .nm{flex:1;}
   .tally .t.outp .nm{color:var(--muted); text-decoration:line-through;}
@@ -183,6 +185,7 @@
     .plu-row{flex:1; display:flex; justify-content:center; gap:5%; align-items:center; min-height:0;}
     .plu-cell{width:27%;}
     .plu-cell.w4{width:22%;}
+    .plu-cell.w5{width:18%;}
     .plu-cell.w2{width:34%;}
     .plu-lab{font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; text-align:center; margin-bottom:0.5mm; white-space:nowrap;}
     .plu-box{border:1.6px solid #000; height:9mm; font-size:14px; font-weight:600; display:flex; align-items:center;
@@ -309,6 +312,7 @@
 
   <div class="card" style="margin-top:12px">
     <b style="font-size:13px; letter-spacing:.06em; text-transform:uppercase;">Playing time</b>
+    <span style="font-size:12px; color:var(--muted)"> — tap a player to see their positions this game</span>
     <div class="tally" id="tally" style="margin-top:6px"></div>
   </div>
 
@@ -357,19 +361,64 @@ const GAMECARD_BG="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLAAAAYrCAAAAAA
 const FORMATS={
   "5v5":{ "1-2-1":[["STRIKER"],["LEFT MID","RIGHT MID"],["CENTER BACK"],["GOAL KEEPER"]],
           "2-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]],
-          "2-1-1":[["STRIKER"],["CENTER MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]] },
+          "2-1-1":[["STRIKER"],["CENTER MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]],
+          "1-1-2":[["LEFT STRIKER","RIGHT STRIKER"],["CENTER MID"],["CENTER BACK"],["GOAL KEEPER"]] },
   "7v7":{ "2-3-1":[["STRIKER"],["LEFT MID","CENTER MID","RIGHT MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]],
           "2-2-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT MID","RIGHT MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]],
-          "3-2-1":[["STRIKER"],["LEFT MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]] },
+          "3-2-1":[["STRIKER"],["LEFT MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
+          "3-1-2":[["LEFT STRIKER","RIGHT STRIKER"],["CENTER MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
+          "1-3-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT MID","CENTER MID","RIGHT MID"],["CENTER BACK"],["GOAL KEEPER"]] },
   "9v9":{ "3-3-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT MID","CENTER MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
           "3-2-3":[["LEFT WING","STRIKER","RIGHT WING"],["LEFT MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
-          "2-3-3":[["LEFT WING","STRIKER","RIGHT WING"],["LEFT MID","CENTER MID","RIGHT MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]] },
+          "2-3-3":[["LEFT WING","STRIKER","RIGHT WING"],["LEFT MID","CENTER MID","RIGHT MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]],
+          "3-4-1":[["STRIKER"],["LEFT MID","LEFT CENTER MID","RIGHT CENTER MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
+          "2-4-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT MID","LEFT CENTER MID","RIGHT CENTER MID","RIGHT MID"],["LEFT BACK","RIGHT BACK"],["GOAL KEEPER"]] },
   "11v11":{ "4-4-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT MID","LEFT CENTER MID","RIGHT CENTER MID","RIGHT MID"],["LEFT BACK","LEFT CENTER BACK","RIGHT CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
             "4-3-3":[["LEFT WING","STRIKER","RIGHT WING"],["LEFT MID","CENTER MID","RIGHT MID"],["LEFT BACK","LEFT CENTER BACK","RIGHT CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
-            "3-4-3":[["LEFT WING","STRIKER","RIGHT WING"],["LEFT MID","LEFT CENTER MID","RIGHT CENTER MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]] }
+            "3-4-3":[["LEFT WING","STRIKER","RIGHT WING"],["LEFT MID","LEFT CENTER MID","RIGHT CENTER MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
+            "4-2-3-1":[["STRIKER"],["LEFT ATT MID","CENTER ATT MID","RIGHT ATT MID"],["LEFT DEF MID","RIGHT DEF MID"],["LEFT BACK","LEFT CENTER BACK","RIGHT CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]],
+            "3-5-2":[["LEFT STRIKER","RIGHT STRIKER"],["LEFT MID","LEFT CENTER MID","CENTER MID","RIGHT CENTER MID","RIGHT MID"],["LEFT BACK","CENTER BACK","RIGHT BACK"],["GOAL KEEPER"]] }
 };
 const FORMAT_DIVS={"5v5":"8U","7v7":"10U","9v9":"12U","11v11":"14U+"};
-function flatPositions(f){ const out=[]; FORMATS[S.format][f].forEach(r=>r.forEach(l=>out.push(l))); return out; }
+/* custom formations (typed by the coach) live in S.custom[format][name] and
+   ride along in hand-off codes; FORMS() = presets + this device's customs */
+function FORMS(){ return Object.assign({},FORMATS[S.format],(S.custom||{})[S.format]||{}); }
+function rowLabels(n,line){
+  const F=line==="STRIKER";
+  if(n===1) return [F?"STRIKER":"CENTER "+line];
+  if(n===2) return F?["LEFT STRIKER","RIGHT STRIKER"]:["LEFT "+line,"RIGHT "+line];
+  if(n===3) return F?["LEFT WING","STRIKER","RIGHT WING"]:["LEFT "+line,"CENTER "+line,"RIGHT "+line];
+  if(n===4) return F?["LEFT WING","LEFT STRIKER","RIGHT STRIKER","RIGHT WING"]
+                    :["LEFT "+line,"LEFT CENTER "+line,"RIGHT CENTER "+line,"RIGHT "+line];
+  return F?["LEFT WING","LEFT STRIKER","STRIKER","RIGHT STRIKER","RIGHT WING"]
+          :["LEFT "+line,"LEFT CENTER "+line,"CENTER "+line,"RIGHT CENTER "+line,"RIGHT "+line];
+}
+function addCustomFormation(){
+  const need=(+S.format.split("v")[0])-1;
+  const raw=prompt("Type your formation, back line first — like 3-2-3 ("+need+" field players + the keeper):");
+  if(!raw) return;
+  const digits=raw.trim().split(/[^0-9]+/).filter(Boolean).map(Number);
+  if(!digits.length||digits.some(d=>d<1||d>5)){ toast("Rows of 1-5 players, like 3-2-3."); return; }
+  const sum=digits.reduce((a,b)=>a+b,0);
+  if(sum!==need){ toast("That adds up to "+sum+" — "+S.format+" needs "+need+" field players plus the keeper."); return; }
+  const name=digits.join("-");
+  const midRows=digits.length-2, rows=[];
+  digits.slice().reverse().forEach((n,i)=>{
+    const ri=digits.length-1-i; // 0 = back line
+    const line=ri===digits.length-1?"STRIKER":ri===0?"BACK":
+      (midRows>1?(ri===1?"DEF MID":ri===digits.length-2?"ATT MID":"MID"):"MID");
+    rows.push(rowLabels(n,line));
+  });
+  rows.push(["GOAL KEEPER"]);
+  if(!S.custom) S.custom={};
+  S.custom[S.format]=S.custom[S.format]||{};
+  S.custom[S.format][name]=rows;
+  S.formation=name; S.quarters=[{},{},{},{}];
+  if(fillFormationsRef) fillFormationsRef();
+  save(); render();
+  toast(name+" added to your formations. It saves on this device and rides along in hand-off codes.");
+}
+function flatPositions(f){ const out=[]; FORMS()[f].forEach(r=>r.forEach(l=>out.push(l))); return out; }
 
 /* The roster is yours: type your players in once — they save to this device
    only and never leave it. */
@@ -383,7 +432,7 @@ function posLine(lb){ return lb.includes("KEEPER")?"GK":lb.includes("BACK")?"DEF
 /* ---------- state ---------- */
 let S=load();
 function freshState(){
-  return { v:1, opponent:"", date:"", time:"", gameNo:"", field:"", homeAway:"", format:"9v9", formation:"3-3-2", schedule:[],
+  return { v:1, opponent:"", date:"", time:"", gameNo:"", field:"", homeAway:"", format:"9v9", formation:"3-3-2", schedule:[], custom:{},
     teamName:"", teamColors:"", coach:"", assCoach:"", division:"",
     players:DEFAULT_ROSTER.map((n,i)=>({id:"p"+i,name:n,num:"",out:false,reason:""})),
     quarters:[{},{},{},{}], nextId:DEFAULT_ROSTER.length, history:[],
@@ -393,7 +442,9 @@ function migrate(s){
   const d=freshState();
   for(const k of ["field","teamName","teamColors","coach","assCoach","homeAway","format","division"]) if(s[k]===undefined) s[k]=d[k];
   if(!FORMATS[s.format]){ s.format=d.format; s.quarters=[{},{},{},{}]; } // saved under a retired format key
-  if(!FORMATS[s.format][s.formation]){ s.formation=Object.keys(FORMATS[s.format])[0]; s.quarters=[{},{},{},{}]; }
+  if(!s.custom||typeof s.custom!=="object"||Array.isArray(s.custom)) s.custom={};
+  const avail=Object.assign({},FORMATS[s.format],s.custom[s.format]||{});
+  if(!avail[s.formation]){ s.formation=Object.keys(FORMATS[s.format])[0]; s.quarters=[{},{},{},{}]; }
   s.players.forEach(p=>{ if(p.num===undefined)p.num=""; if(p.reason===undefined)p.reason=""; });
   // season history: backfill on old saves + undo RTDB array→object coercion on synced data
   s.schedule=Object.values(s.schedule||{}).filter(Boolean);
@@ -482,11 +533,11 @@ function renderQuarters(){
       '<button data-a="fill" data-q="'+q+'">fill</button>'+
       '<button data-a="clear" data-q="'+q+'">clear</button></span></div>';
     let flat=0;
-    FORMATS[S.format][S.formation].forEach(row=>{
+    FORMS()[S.formation].forEach(row=>{
       const line=document.createElement("div"); line.className="prowline";
       row.forEach(label=>{
         const idx=flat++;
-        const cell=document.createElement("div"); cell.className="pcell"+(row.length===2?" w2":row.length>=4?" w4":"");
+        const cell=document.createElement("div"); cell.className="pcell"+(row.length===2?" w2":row.length>=5?" w5":row.length===4?" w4":"");
         const pid=S.quarters[q][idx];
         const p=pid?byId(pid):null;
         const isGK=label==="GOAL KEEPER";
@@ -532,10 +583,22 @@ function renderTally(){
     let q=0,dots="";
     for(let i=0;i<4;i++){ const on=slotOf(p.id,i)>=0; if(on)q++; dots+=on?"■":"·"; }
     const pct=p.out?"—":(q*25)+"%";
-    el.insertAdjacentHTML("beforeend",
-      '<div class="t'+(p.out?' outp':'')+'"><span class="nm">'+esc(shortName(p.name))+
+    const row=document.createElement("div");
+    row.className="t"+(p.out?" outp":"");
+    row.innerHTML='<span class="nm">'+esc(shortName(p.name))+
       (p.out?' <span class="why" style="font-size:11px;color:var(--red)">OUT'+(p.reason?" · "+esc(p.reason):"")+'</span>':'')+
-      '</span><span class="qs">'+dots+'</span><span class="tot'+(q>=4?' full':(!p.out&&q<2?' low':''))+'">'+pct+'</span></div>');
+      '</span><span class="qs">'+dots+'</span><span class="tot'+(q>=4?' full':(!p.out&&q<2?' low':''))+'">'+pct+'</span>';
+    row.onclick=()=>{ // tap = this game's position, quarter by quarter
+      const open=row.nextElementSibling&&row.nextElementSibling.classList.contains("tdet");
+      el.querySelectorAll(".tdet").forEach(d=>d.remove());
+      if(open) return;
+      const labels=flatPositions(S.formation);
+      const d=document.createElement("div"); d.className="tdet";
+      d.textContent=QLAB.map((ql,i)=>{ const s=slotOf(p.id,i);
+        return ql.replace(" qtr","")+": "+(s>=0?labels[s].toLowerCase():(p.out?"out":"sits")); }).join("  ·  ");
+      row.after(d);
+    };
+    el.appendChild(row);
   });
 }
 function renderBanner(){
@@ -858,7 +921,11 @@ function importRosterFile(file){
         if(!fresh.length){ toast("All "+found.players.length+" players in that sheet are already on the roster."); return; }
         if(!confirm("Add "+fresh.length+" players from the sheet?\n\n"+fresh.join(", ")+
           "\n\nOnly names are imported — contact info and birthdates are ignored, and nothing leaves this device.")) return;
-        fresh.forEach(n=>S.players.push({id:"p"+(S.nextId++),name:n,num:"",out:false,reason:""}));
+        let names=fresh;
+        if(confirm("Shorten names to first name + last initial (e.g. \u201CJordan S.\u201D)?\n\nOK = shorten, Cancel = keep full names. Either way the names stay on this device only.")){
+          names=fresh.map(n=>{ const w=n.trim().split(/\s+/); return w[0]+(w.length>1?" "+w[w.length-1][0]+".":""); });
+        }
+        names.forEach(n=>S.players.push({id:"p"+(S.nextId++),name:n,num:"",out:false,reason:""}));
         if(found.coach&&!S.coach) S.coach=found.coach;
         if(found.assCoach&&!S.assCoach) S.assCoach=found.assCoach;
         save(); render(); $("#rosterbox").open=true;
@@ -1016,7 +1083,7 @@ function buildPrintCard(){
     '<div class="cell">Final Score:</div>'+
     '<div class="fnum">'+digits+'</div></div>';
   h+='<div class="plu-quads">';
-  const rows=FORMATS[S.format][S.formation];
+  const rows=FORMS()[S.formation];
   for(let q=0;q<4;q++){
     h+='<div class="plu-q"><span class="lr l">L</span><span class="lr r">R</span>';
     // print strikers at top like the original (attack up)
@@ -1028,7 +1095,7 @@ function buildPrintCard(){
         const idx=flat++;
         const pid=S.quarters[q][idx]; const p=pid?byId(pid):null;
         const isGK=label==="GOAL KEEPER";
-        line+='<div class="plu-cell'+(row.length===2?' w2':row.length>=4?' w4':'')+'"><div class="plu-lab">'+label+'</div>'+
+        line+='<div class="plu-cell'+(row.length===2?' w2':row.length>=5?' w5':row.length===4?' w4':'')+'"><div class="plu-lab">'+label+'</div>'+
           '<div class="plu-box'+(isGK?' gk':'')+'">'+(p?esc(p.name):'')+'</div></div>';
       });
       line+='</div>';
@@ -1155,7 +1222,7 @@ function makeLineupPdf(){
   const qy0=Y+HH, qh=(H-HH)/2, qw=W/2;
   doc.setDrawColor(0).setLineWidth(0.7);
   doc.line(X+qw,qy0,X+qw,Y+H); doc.line(X,qy0+qh,X+W,qy0+qh);
-  const rows=FORMATS[S.format][S.formation];
+  const rows=FORMS()[S.formation];
   for(let q=0;q<4;q++){
     const ox=X+(q%2)*qw, oy=qy0+(q>1?qh:0);
     doc.setFont("helvetica","bold").setFontSize(8).setTextColor(130,130,130);
@@ -1165,7 +1232,7 @@ function makeLineupPdf(){
     let gkY=0;
     rows.forEach((row,r)=>{
       const rowY=ry0+r*rowh;
-      const bw=(row.length===2?0.34:row.length===3?0.27:0.21)*iw, gap=(row.length>=4?0.03:0.05)*iw;
+      const bw=(row.length===2?0.34:row.length===3?0.27:row.length===4?0.21:0.17)*iw, gap=(row.length>=4?0.03:0.05)*iw;
       const total=row.length*bw+(row.length-1)*gap;
       let bx=ox+6+(iw-total)/2;
       const boxY=rowY+(rowh-boxh)/2+1.2;
@@ -1243,9 +1310,10 @@ function boot(){
   });
   function fillFormations(){
     fsel.innerHTML="";
-    Object.keys(FORMATS[S.format]).forEach(f=>{
+    Object.keys(FORMS()).forEach(f=>{
       const o=document.createElement("option"); o.value=f; o.textContent=f; fsel.appendChild(o);
     });
+    const oc=document.createElement("option"); oc.value="__custom__"; oc.textContent="Custom…"; fsel.appendChild(oc);
   }
   fillFormations(); fillFormationsRef=fillFormations;
   $("#setupcard").open=true; // instructions start unfurled every load; collapsible for the session
@@ -1256,6 +1324,7 @@ function boot(){
     S.quarters=[{},{},{},{}]; fillFormations(); save(); render();
   };
   fsel.onchange=()=>{
+    if(fsel.value==="__custom__"){ fsel.value=S.formation; addCustomFormation(); return; }
     const n=flatPositions(fsel.value).length;
     S.formation=fsel.value;
     S.quarters.forEach(qt=>{ for(const k in qt){ if(+k>=n) delete qt[k]; } });
