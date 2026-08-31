@@ -369,7 +369,8 @@ const FORMATIONS = {
             ["LEFT BACK","RIGHT BACK"],
             ["GOAL KEEPER"]]
 };
-function flatPositions(f){ const out=[]; FORMATIONS[f].forEach(r=>r.forEach(l=>out.push(l))); return out; }
+function flatPositions(f){ const out=[]; FORMS()[f].forEach(r=>r.forEach(l=>out.push(l))); return out; }
+function FORMS(){ return FORMATIONS; } // league build overrides this to merge per-format presets + customs
 
 /* No player names in this public file. The roster lives in the gated database
    and in each coach's local save — a fresh device syncs it right after
@@ -504,7 +505,7 @@ function renderQuarters(){
       '<button data-a="fill" data-q="'+q+'">fill</button>'+
       '<button data-a="clear" data-q="'+q+'">clear</button></span></div>';
     let flat=0;
-    FORMATIONS[S.formation].forEach(row=>{
+    FORMS()[S.formation].forEach(row=>{
       const line=document.createElement("div"); line.className="prowline";
       row.forEach(label=>{
         const idx=flat++;
@@ -543,11 +544,16 @@ function renderQuarters(){
       const sp=document.createElement("span");
       sp.className="bname"+(placing&&placing.pid===p.id&&placing.q===q?" placing":"");
       sp.textContent=(bi?", ":"")+firstName(p.name);
-      sp.onclick=()=>{
-        if(placing&&placing.pid===p.id&&placing.q===q){ placing=null; render(); return; }
-        placing={pid:p.id,q};
-        render();
-        toast("Now tap a position in the "+QLAB[q]+" for "+firstName(p.name)+" — or tap their name again to cancel.");
+      sp.onclick=()=>{ // arm/cancel is cosmetic — toggle classes, don't re-render
+        const arm=!(placing&&placing.pid===p.id&&placing.q===q);
+        placing=arm?{pid:p.id,q}:null;
+        document.querySelectorAll(".pbox.droptarget").forEach(b=>b.classList.remove("droptarget"));
+        document.querySelectorAll(".bname.placing").forEach(b=>b.classList.remove("placing"));
+        if(arm){
+          sp.classList.add("placing");
+          sp.closest(".qpanel").querySelectorAll(".pbox").forEach(b=>b.classList.add("droptarget"));
+          toast("Now tap a position in the "+QLAB[q]+" for "+firstName(p.name)+" — or tap their name again to cancel.");
+        }
       };
       bl.appendChild(sp);
     });
@@ -821,7 +827,7 @@ function maybeLoadFromHash(){
     const incoming=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
     if(incoming&&incoming.players&&incoming.quarters&&
        confirm("Load the shared lineup from this link? It replaces what's saved on this device.")){
-      S=incoming; save();
+      S=migrate(incoming); save();
     }
   }catch(e){ toast("That share link didn't parse."); }
   history.replaceState(null,"",location.pathname);
@@ -835,7 +841,7 @@ function maybeLoadFromHash(){
    offline, the unlocked flag + local save) keeps working. To change the
    passcode, set a new password on the shared user in Firebase console →
    Authentication → Users (new password = sha256("R785-lineup:"+passcode) hex). */
-let db=null, applyingRemote=false, pushTimer=null, authReady=null;
+let db=null, pushTimer=null, authReady=null;
 const GATEOK="lineup-gate-ok";
 const GATE_EMAIL="coaches@game-lineup.firebaseapp.com";
 async function gatePass(code){
@@ -878,9 +884,9 @@ function attachDb(){
       // objects or null-holed arrays — normalize both before applying
       remote.quarters=[0,1,2,3].map(i=>(remote.quarters&&remote.quarters[i])||{});
       remote.players=Object.values(remote.players||{}).filter(Boolean);
-      applyingRemote=true; S=migrate(remote);
+      S=migrate(remote);
       try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
-      render(); applyingRemote=false;
+      render();
     } else if(S.ts>(remote.ts||0)){ pushRemote(); } // our data is newer — seed the shared lineup
   });
 }
@@ -919,7 +925,7 @@ function buildPrintCard(){
     '<div class="cell">Final Score:</div>'+
     '<div class="fnum">'+digits+'</div></div>';
   h+='<div class="plu-quads">';
-  const rows=FORMATIONS[S.formation];
+  const rows=FORMS()[S.formation];
   for(let q=0;q<4;q++){
     h+='<div class="plu-q"><span class="lr l">L</span><span class="lr r">R</span>';
     // print strikers at top like the original (attack up)
@@ -1058,7 +1064,7 @@ function makeLineupPdf(){
   const qy0=Y+HH, qh=(H-HH)/2, qw=W/2;
   doc.setDrawColor(0).setLineWidth(0.7);
   doc.line(X+qw,qy0,X+qw,Y+H); doc.line(X,qy0+qh,X+W,qy0+qh);
-  const rows=FORMATIONS[S.formation];
+  const rows=FORMS()[S.formation];
   for(let q=0;q<4;q++){
     const ox=X+(q%2)*qw, oy=qy0+(q>1?qh:0);
     doc.setFont("helvetica","bold").setFontSize(8).setTextColor(130,130,130);
@@ -1141,7 +1147,7 @@ function makeGameCardPdf(){
 /* ---------- boot ---------- */
 function boot(){
   const fsel=$("#formation");
-  Object.keys(FORMATIONS).forEach(f=>{
+  Object.keys(FORMS()).forEach(f=>{
     const o=document.createElement("option"); o.value=f; o.textContent=f+" (5v5)"; fsel.appendChild(o);
   });
   fsel.onchange=()=>{
