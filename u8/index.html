@@ -377,19 +377,20 @@ function FORMS(){ return FORMATIONS; } // league build overrides this to merge p
    unlocking. The Add box covers guests, late adds, and offline first runs. */
 const DEFAULT_ROSTER = [];
 /* ---------- season schedule (Lynch/Magennis 8UB, AYSO Fall 2026, Morley Field) ----------
-   Source: the Pi's /api/soccer.json (kid: simon), pulled 2026-08-25. Times may
+   Source: the Pi's /api/soccer.json (kid: simon), pulled 2026-08-25, re-synced
+   2026-09-11 after the AYSO 2026-09-09 Schedule Updated batch. Times may
    shift if the region reschedules — re-pull and update this list if a game moves. */
 const SCHEDULE=[
   {date:"2026-08-29",time:"11:00",opp:"Wu / Strother",ha:"home",field:"Morley 8"},
   {date:"2026-09-12",time:"11:00",opp:"Lawton",ha:"home",field:"Morley 8"},
-  {date:"2026-09-19",time:"11:00",opp:"Merry / Barraza",ha:"away",field:"Morley 8"},
-  {date:"2026-09-26",time:"08:00",opp:"Weaver",ha:"home",field:"Morley 8"},
-  {date:"2026-10-03",time:"08:00",opp:"Wurst / Seibert",ha:"away",field:"Morley 7"},
-  {date:"2026-10-10",time:"11:00",opp:"Henson / Santos",ha:"away",field:"Morley 8"},
-  {date:"2026-10-17",time:"11:00",opp:"Cyr / McBride",ha:"home",field:"Morley 7"},
-  {date:"2026-10-24",time:"10:00",opp:"Nguyen / Azevedo",ha:"away",field:"Morley 7"},
-  {date:"2026-10-31",time:"09:00",opp:"Starosta",ha:"home",field:"Morley 8"},
-  {date:"2026-11-07",time:"09:00",opp:"Velasquez",ha:"away",field:"Morley 7"}
+  {date:"2026-09-19",time:"10:00",opp:"Mery / Barraza",ha:"away",field:"Morley 8"},
+  {date:"2026-09-26",time:"12:00",opp:"Weaver",ha:"home",field:"Morley 8"},
+  {date:"2026-10-03",time:"12:00",opp:"Wurst / Seibert",ha:"away",field:"Morley 7"},
+  {date:"2026-10-10",time:"09:00",opp:"Henson / Santos",ha:"away",field:"Morley 8"},
+  {date:"2026-10-17",time:"09:00",opp:"Cyr / McBride",ha:"home",field:"Morley 7"},
+  {date:"2026-10-24",time:"08:00",opp:"Nguyen / Azevedo",ha:"away",field:"Morley 7"},
+  {date:"2026-10-31",time:"11:00",opp:"Starosta",ha:"home",field:"Morley 8"},
+  {date:"2026-11-07",time:"10:00",opp:"Velasquez",ha:"away",field:"Morley 7"}
 ];
 const KEY="lineup-8u-v1";
 const QLAB=["1st qtr","2nd qtr","3rd qtr","4th qtr"];

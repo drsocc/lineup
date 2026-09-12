@@ -376,21 +376,21 @@ function FORMS(){ return FORMATIONS; } // league build overrides this to merge p
    unlocking. The Add box covers guests, late adds, and offline first runs. */
 const DEFAULT_ROSTER = [];
 /* ---------- season schedule (Lynch BU12, AYSO Fall 2026, Morley Field) ----------
-   Source: MatchTrak via the Pi's /api/soccer.json, pulled 2026-08-25. Times may
+   Source: MatchTrak via the Pi's /api/soccer.json, pulled 2026-08-24, re-synced 2026-09-11 (MatchTrak re-times). Times may
    shift as MatchTrak reschedules — re-pull and update this list if a game moves. */
 const SCHEDULE=[
   {date:"2026-08-29",time:"08:00",opp:"Martin",ha:"away",field:"Morley 5"},
   {date:"2026-09-12",time:"09:05",opp:"Potsic",ha:"home",field:"Morley 6"},
-  {date:"2026-09-19",time:"18:30",opp:"Martin",ha:"home",field:"Morley 6"},
-  {date:"2026-09-26",time:"11:55",opp:"Varone",ha:"away",field:"Morley 6"},
-  {date:"2026-09-26",time:"18:30",opp:"Heller",ha:"away",field:"Morley 5"},
-  {date:"2026-10-03",time:"07:45",opp:"Boren",ha:"home",field:"Morley 6"},
-  {date:"2026-10-03",time:"11:55",opp:"Potsic",ha:"away",field:"Morley 5"},
-  {date:"2026-10-10",time:"07:45",opp:"Stickel",ha:"home",field:"Morley 5"},
-  {date:"2026-10-17",time:"07:45",opp:"Heller",ha:"away",field:"Morley 6"},
-  {date:"2026-10-24",time:"09:05",opp:"Stickel",ha:"home",field:"Morley 5"},
-  {date:"2026-10-31",time:"07:30",opp:"Boren",ha:"away",field:"Morley 6"},
-  {date:"2026-11-07",time:"11:55",opp:"Varone",ha:"home",field:"Morley 5"}
+  {date:"2026-09-19",time:"11:50",opp:"Martin",ha:"home",field:"Morley 6"},
+  {date:"2026-09-26",time:"08:00",opp:"Varone",ha:"away",field:"Morley 6"},
+  {date:"2026-09-26",time:"10:30",opp:"Heller",ha:"away",field:"Morley 5"},
+  {date:"2026-10-03",time:"08:00",opp:"Boren",ha:"home",field:"Morley 5"},
+  {date:"2026-10-03",time:"10:30",opp:"Potsic",ha:"away",field:"Morley 5"},
+  {date:"2026-10-10",time:"10:30",opp:"Stickel",ha:"home",field:"Morley 5"},
+  {date:"2026-10-17",time:"10:30",opp:"Heller",ha:"away",field:"Morley 6"},
+  {date:"2026-10-24",time:"09:15",opp:"Stickel",ha:"home",field:"Morley 5"},
+  {date:"2026-10-31",time:"09:15",opp:"Boren",ha:"away",field:"Morley 5"},
+  {date:"2026-11-07",time:"08:00",opp:"Varone",ha:"home",field:"Morley 6"}
 ];
 const KEY="lineup-12u-v2";
 const QLAB=["1st qtr","2nd qtr","3rd qtr","4th qtr"];
